@@ -127,8 +127,17 @@ def compelet_data():
     print('df')
     x_complete.to_csv('test_comp.csv')
 
-if __name__=='__main__':
-    #sub_pred()
+'''
+ colsample_bytree：0.9547
+ min_child_samples 5.3656
+ n_estimators：1450.1096
+num_leaves 119.3153 |
+reg_alpha 0.1930 |
+reg_lambda： 8.6361 |
+subsample 0.8495 |
+'''
+
+def obsearch():
     data=pd.read_csv('test_comp.csv',index_col=0)
     data=data.values
     label=pd.read_csv('label.csv',index_col=0,header=None)
@@ -149,3 +158,7 @@ if __name__=='__main__':
 
     lgbBO.maximize(init_points=init_points, n_iter=num_iter)
     print(lgbBO.res['max']['max_val'])
+
+
+if __name__=='__main__':
+    #sub_pred()

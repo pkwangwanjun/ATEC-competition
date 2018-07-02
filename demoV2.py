@@ -224,6 +224,11 @@ def select_sample():
     return train
 
 
+def vali(x,y):
+    lgbc=lgb.LGBMClassifier(n_estimators=500,max_depth=-1,num_leaves=100,learning_rate=0.01,subsample=0.8,sub_feature=0.8,random_state=0,n_jobs=-1,objective='binary',is_unbalance=True)
+    precision_score(x,lgbc.predict(x))
+    recall_score(x,lgbc.predict(x))
+
 if __name__=='__main__':
     #sub_pred()
     pass

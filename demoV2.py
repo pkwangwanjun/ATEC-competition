@@ -99,7 +99,7 @@ def sub_pred():
 
     data.loc[data.label==-1,'label']=1
     #data=data[data['label']!=-1]
-    data.fillna(-1,inplace=True)
+    #data.fillna(-1,inplace=True)
     y=data['label']
     print(pd.value_counts(y))
     x=data[data.columns[data.columns!='label']]
@@ -109,10 +109,10 @@ def sub_pred():
             continue
         x['f{}'.format(i)]=x['f{}'.format(i)].astype('category')
     gc.collect()
-    lgbc=lgb.LGBMClassifier(n_estimators=500,max_depth=-1,num_leaves=100,learning_rate=0.01,subsample=0.8,sub_feature=0.8,random_state=0,n_jobs=-1,objective='binary',is_unbalance=True)
+    lgbc=lgb.LGBMClassifier(n_estimators=600,max_depth=-1,num_leaves=100,learning_rate=0.01,subsample=0.8,sub_feature=0.8,random_state=0,n_jobs=-1,objective='binary',is_unbalance=True)
     lgbc.fit(x,y)
     test=pd.read_csv('data/atec_anti_fraud_test_b.csv',index_col=0)
-    test.fillna(-1,inplace=True)
+    #test.fillna(-1,inplace=True)
     test.drop('date',axis=1,inplace=True)
     for i in range(1,20):
         if i==5:
@@ -122,7 +122,7 @@ def sub_pred():
     temp=pd.DataFrame(pred_prob[:,1],index=test.index)
     temp.reset_index(inplace=True)
     temp.columns=['id','score']
-    temp.to_csv('test_wtf.csv',index=None)
+    temp.to_csv('test_wtf_b.csv',index=None)
 
 
 def compelet_data():
@@ -226,9 +226,11 @@ def select_sample():
 
 def vali(x,y):
     lgbc=lgb.LGBMClassifier(n_estimators=500,max_depth=-1,num_leaves=100,learning_rate=0.01,subsample=0.8,sub_feature=0.8,random_state=0,n_jobs=-1,objective='binary',is_unbalance=True)
-    precision_score(x,lgbc.predict(x))
-    recall_score(x,lgbc.predict(x))
+    lgbc.fit(x,y)
+    precision_score(y,lgbc.predict(x))
+    roc_auc_score(y,lgbc.predict_proba(x)[:,1])
+    recall_score(y,lgbc.predict(x))
 
 if __name__=='__main__':
-    #sub_pred()
-    pass
+    sub_pred()
+    #pass

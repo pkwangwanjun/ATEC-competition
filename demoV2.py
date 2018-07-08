@@ -99,25 +99,26 @@ def sub_pred():
 
     data.loc[data.label==-1,'label']=1
     #data=data[data['label']!=-1]
-    #data.fillna(-1,inplace=True)
+    data.fillna(-1,inplace=True)
     y=data['label']
     print(pd.value_counts(y))
     x=data[data.columns[data.columns!='label']]
     x.drop('date',axis=1,inplace=True)
-    for i in range(1,20):
-        if i==5:
-            continue
-        x['f{}'.format(i)]=x['f{}'.format(i)].astype('category')
+    #for i in range(1,20):
+    #    if i==5:
+    #        continue
+    #    x['f{}'.format(i)]=x['f{}'.format(i)].astype('category')
     gc.collect()
-    lgbc=lgb.LGBMClassifier(n_estimators=600,max_depth=-1,num_leaves=100,learning_rate=0.01,subsample=0.8,sub_feature=0.8,random_state=0,n_jobs=-1,objective='binary',is_unbalance=True)
+
+    lgbc=lgb.LGBMClassifier(n_estimators=500,max_depth=-1,num_leaves=100,learning_rate=0.01,subsample=0.8,sub_feature=0.8,random_state=0,n_jobs=-1,objective='binary')
     lgbc.fit(x,y)
     test=pd.read_csv('data/atec_anti_fraud_test_b.csv',index_col=0)
-    #test.fillna(-1,inplace=True)
+    test.fillna(-1,inplace=True)
     test.drop('date',axis=1,inplace=True)
-    for i in range(1,20):
-        if i==5:
-            continue
-        test['f{}'.format(i)]=test['f{}'.format(i)].astype('category')
+    #for i in range(1,20):
+    #    if i==5:
+    #        continue
+    #    test['f{}'.format(i)]=test['f{}'.format(i)].astype('category')
     pred_prob=lgbc.predict_proba(test)
     temp=pd.DataFrame(pred_prob[:,1],index=test.index)
     temp.reset_index(inplace=True)
@@ -230,6 +231,29 @@ def vali(x,y):
     precision_score(y,lgbc.predict(x))
     roc_auc_score(y,lgbc.predict_proba(x)[:,1])
     recall_score(y,lgbc.predict(x))
+
+
+
+train_0=pd.read_csv('train_0.csv',index_col=0)
+train_1=pd.read_csv('train_1.csv',index_col=0)
+
+#train=train_0.iloc[np.random.choice(range(len(train_0)),size=13*len(train_1),replace=False)]
+data=train_0.append(train_1)
+X=data[data.columns.difference(['label'])]
+X.drop('date',axis=1,inplace=True)
+Y=data.label
+lgbc=lgb.LGBMClassifier(n_estimators=500,max_depth=-1,class_weight={0:1,1:1.5},num_leaves=100,learning_rate=0.01,subsample=0.8,sub_feature=0.8,random_state=0,n_jobs=-1,objective='binary')
+lgbc.fit(X,Y)
+
+test=pd.read_csv('data/atec_anti_fraud_test_b.csv',index_col=0)
+test.fillna(-1,inplace=True)
+test.drop('date',axis=1,inplace=True)
+
+pred_prob=lgbc.predict_proba(test)
+temp=pd.DataFrame(pred_prob[:,1],index=test.index)
+temp.reset_index(inplace=True)
+temp.columns=['id','score']
+temp.to_csv('test_wtf_b.csv',index=None)
 
 if __name__=='__main__':
     sub_pred()
